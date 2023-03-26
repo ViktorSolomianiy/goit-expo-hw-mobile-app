@@ -41,11 +41,14 @@ export default function App() {
         <ImageBackground source={bgImg} style={styles.bgImage}>
           <KeyboardAvoidingView>
             <View style={styles.containerForm}>
-              {/* <LoginScreen behavior={platform} /> */}
-              <RegistrationScreen
+              <LoginScreen
                 behavior={platform}
                 isKeyboardStatus={isKeyboardStatus}
               />
+              {/* <RegistrationScreen
+                behavior={platform}
+                isKeyboardStatus={isKeyboardStatus}
+              /> */}
             </View>
           </KeyboardAvoidingView>
         </ImageBackground>

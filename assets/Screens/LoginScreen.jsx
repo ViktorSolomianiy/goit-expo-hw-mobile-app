@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import {
   View,
   TextInput,
@@ -7,43 +7,89 @@ import {
   TouchableOpacity,
   Button,
   Keyboard,
+  Pressable,
 } from "react-native";
+import { useFonts } from "expo-font";
+import * as SplashScreen from "expo-splash-screen";
 
-export const LoginScreen = () => {
-  const [isKeyboardStatus, setIsKeyboardStatus] = useState("Keyboard Hidden");
+import { useTogglePasswordVisibility } from "../hooks/useTogglePasswordVisibility";
 
-  useEffect(() => {
-    const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
-      setIsKeyboardStatus("Keyboard Shown");
-    });
-    const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
-      setIsKeyboardStatus("Keyboard Hidden");
-    });
+const initialState = {
+  email: "",
+  password: "",
+};
 
-    return () => {
-      showSubscription.remove();
-      hideSubscription.remove();
-    };
-  }, []);
+SplashScreen.preventAutoHideAsync();
+
+export const LoginScreen = ({ isKeyboardStatus }) => {
+  const [isFocusedEmail, setIsEmail] = useState(false);
+  const [isFocusedPassword, setIsPassword] = useState(false);
+  const { passwordVisibility, rightShow, handlePasswordVisibility } =
+    useTogglePasswordVisibility();
+  const [state, setState] = useState(initialState);
+  const [fontsLoaded] = useFonts({
+    "SignikaNegative-Medium": require("../fonts/SignikaNegative-Medium.ttf"),
+    "SignikaNegative-Light": require("../fonts/SignikaNegative-Light.ttf"),
+    "SignikaNegative-Regular": require("../fonts/SignikaNegative-Regular.ttf"),
+  });
+
+  const onLayoutRootView = useCallback(async () => {
+    if (fontsLoaded) {
+      await SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
+    return null;
+  }
+
+  const keyboardHide = () => {
+    Keyboard.dismiss();
+    setState(initialState);
+
+    console.log(state);
+  };
 
   const marginBottomForm = isKeyboardStatus === "Keyboard Shown" ? 32 : 78;
 
   return (
-    <View style={{ ...styles.form, marginBottom: marginBottomForm }}>
+    <View
+      style={{ ...styles.form, marginBottom: marginBottomForm }}
+      onLayout={onLayoutRootView}
+    >
       <Text style={styles.title}>Login</Text>
 
       <View style={styles.formFlex}>
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          autoCapitalize="none"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          secureTextEntry={true}
-          autoCapitalize="none"
-        />
+        <View style={styles.inputContainer}>
+          <TextInput
+            onChangeText={(value) =>
+              setState((prevState) => ({ ...prevState, email: value }))
+            }
+            onFocus={() => setIsEmail(true)}
+            onBlur={() => setIsEmail(false)}
+            value={state.email}
+            style={isFocusedEmail ? styles.inputOnFocus : styles.input}
+            placeholder="Email"
+            autoCapitalize="none"
+          />
+        </View>
+        <View style={styles.inputContainer}>
+          <TextInput
+            onChangeText={(value) =>
+              setState((prevState) => ({ ...prevState, password: value }))
+            }
+            onFocus={() => setIsPassword(true)}
+            onBlur={() => setIsPassword(false)}
+            value={state.password}
+            style={isFocusedPassword ? styles.inputOnFocus : styles.input}
+            placeholder="Password"
+            secureTextEntry={passwordVisibility}
+            autoCapitalize="none"
+          />
+          <Pressable onPress={handlePasswordVisibility}>
+            <Text style={styles.inputPasswordVisibility}>{rightShow}</Text>
+          </Pressable>
+        </View>
       </View>
 
       {isKeyboardStatus === "Keyboard Hidden" && isKeyboardStatus !== "" && (
@@ -51,12 +97,12 @@ export const LoginScreen = () => {
           <TouchableOpacity
             style={styles.btn}
             activeOpacity={0.8}
-            onPress={() => Keyboard.dismiss()}
+            onPress={() => keyboardHide()}
           >
-            <Text style={styles.btnTitle}>Login</Text>
+            <Text style={styles.btnTitle}>Register</Text>
           </TouchableOpacity>
 
-          <Text style={styles.btnRegistr}>Don't have an account? Register</Text>
+          <Text style={styles.btnLogin}>Have an account? Log in</Text>
           {/* <Button style={styles.btnLogin} title="Have an account? Log in" /> */}
         </>
       )}
@@ -74,6 +120,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   title: {
+    fontFamily: "SignikaNegative-Medium",
     marginTop: 32,
     marginBottom: 33,
     fontSize: 30,
@@ -83,13 +130,42 @@ const styles = StyleSheet.create({
     marginRight: "auto",
   },
   input: {
+    fontFamily: "SignikaNegative-Light",
+    fontSize: 16,
+    color: "#BDBDBD",
+    width: "100%",
+    height: 50,
+    padding: 16,
+  },
+  inputOnFocus: {
+    fontSize: 16,
+    width: "100%",
+    borderWidth: 1,
+    borderColor: "#FF6C00",
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    height: 50,
+    padding: 16,
+    color: "#212121",
+  },
+  inputContainer: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 1,
     borderColor: "#e8e8e8",
     borderRadius: 8,
-    height: 50,
     backgroundColor: "#F6F6F6",
-    padding: 16,
     color: "#212121",
+  },
+  inputPasswordVisibility: {
+    fontFamily: "SignikaNegative-Regular",
+    position: "absolute",
+    right: 0,
+    top: -12,
+    marginRight: 16,
+    color: "#1B4371",
+    fontSize: 16,
   },
   btn: {
     marginTop: 43,
@@ -100,11 +176,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#FF6C00",
   },
   btnTitle: {
+    fontFamily: "SignikaNegative-Regular",
     padding: 16,
     fontSize: 16,
     color: "#ffffff",
   },
-  btnRegistratiom: {
+  btnLogin: {
+    fontFamily: "SignikaNegative-Regular",
     marginLeft: "auto",
     marginRight: "auto",
     fontSize: 16,
