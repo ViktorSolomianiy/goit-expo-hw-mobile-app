@@ -102,7 +102,7 @@ export const LoginScreen = ({ isKeyboardStatus }) => {
             <Text style={styles.btnTitle}>Register</Text>
           </TouchableOpacity>
 
-          <Text style={styles.btnLogin}>Have an account? Log in</Text>
+          <Text style={styles.btnLogin}>Don't have an account? Register</Text>
           {/* <Button style={styles.btnLogin} title="Have an account? Log in" /> */}
         </>
       )}
