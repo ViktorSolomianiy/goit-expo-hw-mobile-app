@@ -1,77 +1,32 @@
-import { useEffect, useState } from "react";
-import {
-  StyleSheet,
-  View,
-  ImageBackground,
-  KeyboardAvoidingView,
-  Platform,
-  Dimensions,
-  TouchableWithoutFeedback,
-  Keyboard,
-} from "react-native";
+import { useCallback } from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { useFonts } from "expo-font";
+import * as SplashScreen from "expo-splash-screen";
 
-import { LoginScreen } from "./assets/Screens/LoginScreen";
-import { RegistrationScreen } from "./assets/Screens/RegistrationScreen";
+import { useRoute } from "./assets/router/router";
 
-const bgImg = require("./assets/images/bg.jpg");
-const screenHeight = Dimensions.get("window").height;
-const screenWidth = Dimensions.get("window").width;
-const platform = Platform.OS == "ios" ? "padding" : "height";
+SplashScreen.preventAutoHideAsync();
 
 export default function App() {
-  const [isKeyboardStatus, setIsKeyboardStatus] = useState("Keyboard Hidden");
+  const routing = useRoute(true);
+  const [fontsLoaded] = useFonts({
+    "SignikaNegative-Medium": require("./assets/fonts/SignikaNegative-Medium.ttf"),
+    "SignikaNegative-Light": require("./assets/fonts/SignikaNegative-Light.ttf"),
+    "SignikaNegative-Regular": require("./assets/fonts/SignikaNegative-Regular.ttf"),
+    "SignikaNegative-SemiBold": require("./assets/fonts/SignikaNegative-SemiBold.ttf"),
+  });
 
-  useEffect(() => {
-    const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
-      setIsKeyboardStatus("Keyboard Shown");
-    });
-    const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
-      setIsKeyboardStatus("Keyboard Hidden");
-    });
+  const onLayoutRootView = useCallback(async () => {
+    if (fontsLoaded) {
+      await SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
 
-    return () => {
-      showSubscription.remove();
-      hideSubscription.remove();
-    };
-  }, []);
+  if (!fontsLoaded) {
+    return null;
+  }
 
-  return (
-    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-      <View style={styles.container}>
-        <ImageBackground source={bgImg} style={styles.bgImage}>
-          <KeyboardAvoidingView>
-            <View style={styles.containerForm}>
-              <LoginScreen
-                behavior={platform}
-                isKeyboardStatus={isKeyboardStatus}
-              />
-              {/* <RegistrationScreen
-                behavior={platform}
-                isKeyboardStatus={isKeyboardStatus}
-              /> */}
-            </View>
-          </KeyboardAvoidingView>
-        </ImageBackground>
-      </View>
-    </TouchableWithoutFeedback>
-  );
+  onLayoutRootView();
+
+  return <NavigationContainer>{routing}</NavigationContainer>;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  containerForm: {
-    backgroundColor: "#ffffff",
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
-  },
-  bgImage: {
-    flex: 1,
-    height: screenHeight,
-    width: screenWidth,
-    resizeMode: "cover",
-    justifyContent: "flex-end",
-  },
-});

@@ -1,130 +1,151 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import {
   View,
   TextInput,
   StyleSheet,
   Text,
   TouchableOpacity,
-  Button,
   Keyboard,
   Pressable,
+  KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Dimensions,
+  Image,
 } from "react-native";
-import { useFonts } from "expo-font";
-import * as SplashScreen from "expo-splash-screen";
 
 import { useTogglePasswordVisibility } from "../hooks/useTogglePasswordVisibility";
+import { useKeyboardStatus } from "../hooks/useKeyboardStatus";
 
+const screenHeight = Dimensions.get("window").height;
+const screenWidth = Dimensions.get("window").width;
+const bgImg = require("../images/bg.jpg");
 const initialState = {
   email: "",
   password: "",
 };
 
-SplashScreen.preventAutoHideAsync();
-
-export const LoginScreen = ({ isKeyboardStatus }) => {
+export const LoginScreen = ({ navigation }) => {
   const [isFocusedEmail, setIsEmail] = useState(false);
   const [isFocusedPassword, setIsPassword] = useState(false);
   const { passwordVisibility, rightShow, handlePasswordVisibility } =
     useTogglePasswordVisibility();
+  const [isKeyboardStatus] = useKeyboardStatus();
   const [state, setState] = useState(initialState);
-  const [fontsLoaded] = useFonts({
-    "SignikaNegative-Medium": require("../fonts/SignikaNegative-Medium.ttf"),
-    "SignikaNegative-Light": require("../fonts/SignikaNegative-Light.ttf"),
-    "SignikaNegative-Regular": require("../fonts/SignikaNegative-Regular.ttf"),
-  });
-
-  const onLayoutRootView = useCallback(async () => {
-    if (fontsLoaded) {
-      await SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded]);
-
-  if (!fontsLoaded) {
-    return null;
-  }
 
   const keyboardHide = () => {
     Keyboard.dismiss();
     setState(initialState);
-
-    console.log(state);
   };
 
   const marginBottomForm = isKeyboardStatus === "Keyboard Shown" ? 32 : 78;
 
   return (
-    <View
-      style={{ ...styles.form, marginBottom: marginBottomForm }}
-      onLayout={onLayoutRootView}
-    >
-      <Text style={styles.title}>Login</Text>
+    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+      <View style={styles.container}>
+        <Image source={bgImg} style={styles.bgImage} />
+        <KeyboardAvoidingView>
+          <View style={styles.containerForm}>
+            <View style={{ ...styles.form, marginBottom: marginBottomForm }}>
+              <Text style={styles.title}>Login</Text>
 
-      <View style={styles.formFlex}>
-        <View style={styles.inputContainer}>
-          <TextInput
-            onChangeText={(value) =>
-              setState((prevState) => ({ ...prevState, email: value }))
-            }
-            onFocus={() => setIsEmail(true)}
-            onBlur={() => setIsEmail(false)}
-            value={state.email}
-            style={isFocusedEmail ? styles.inputOnFocus : styles.input}
-            placeholder="Email"
-            autoCapitalize="none"
-          />
-        </View>
-        <View style={styles.inputContainer}>
-          <TextInput
-            onChangeText={(value) =>
-              setState((prevState) => ({ ...prevState, password: value }))
-            }
-            onFocus={() => setIsPassword(true)}
-            onBlur={() => setIsPassword(false)}
-            value={state.password}
-            style={isFocusedPassword ? styles.inputOnFocus : styles.input}
-            placeholder="Password"
-            secureTextEntry={passwordVisibility}
-            autoCapitalize="none"
-          />
-          <Pressable onPress={handlePasswordVisibility}>
-            <Text style={styles.inputPasswordVisibility}>{rightShow}</Text>
-          </Pressable>
-        </View>
+              <View style={styles.formFlex}>
+                <View style={styles.inputContainer}>
+                  <TextInput
+                    onChangeText={(value) =>
+                      setState((prevState) => ({ ...prevState, email: value }))
+                    }
+                    onFocus={() => setIsEmail(true)}
+                    onBlur={() => setIsEmail(false)}
+                    value={state.email}
+                    style={isFocusedEmail ? styles.inputOnFocus : styles.input}
+                    placeholder="Email"
+                    autoCapitalize="none"
+                  />
+                </View>
+                <View style={[styles.inputContainer, { marginBottom: 0 }]}>
+                  <TextInput
+                    onChangeText={(value) =>
+                      setState((prevState) => ({
+                        ...prevState,
+                        password: value,
+                      }))
+                    }
+                    onFocus={() => setIsPassword(true)}
+                    onBlur={() => setIsPassword(false)}
+                    value={state.password}
+                    style={
+                      isFocusedPassword ? styles.inputOnFocus : styles.input
+                    }
+                    placeholder="Password"
+                    secureTextEntry={passwordVisibility}
+                    autoCapitalize="none"
+                  />
+                  <Pressable onPress={handlePasswordVisibility}>
+                    <Text style={styles.inputPasswordVisibility}>
+                      {rightShow}
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+              {isKeyboardStatus === "Keyboard Hidden" && (
+                <View>
+                  <TouchableOpacity
+                    style={styles.btn}
+                    activeOpacity={0.8}
+                    onPress={() => keyboardHide()}
+                  >
+                    <Text style={styles.btnTitle}>Login</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={() => navigation.navigate("Register")}
+                    activeOpacity={0.6}
+                  >
+                    <Text style={styles.btnLogin}>
+                      Don't have an account? Register
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          </View>
+        </KeyboardAvoidingView>
       </View>
-
-      {isKeyboardStatus === "Keyboard Hidden" && isKeyboardStatus !== "" && (
-        <>
-          <TouchableOpacity
-            style={styles.btn}
-            activeOpacity={0.8}
-            onPress={() => keyboardHide()}
-          >
-            <Text style={styles.btnTitle}>Register</Text>
-          </TouchableOpacity>
-
-          <Text style={styles.btnLogin}>Don't have an account? Register</Text>
-          {/* <Button style={styles.btnLogin} title="Have an account? Log in" /> */}
-        </>
-      )}
-    </View>
+    </TouchableWithoutFeedback>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    justifyContent: "flex-end",
+  },
+  containerForm: {
+    backgroundColor: "#ffffff",
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+  },
+  bgImage: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    width: "100%",
+    height: screenHeight,
+  },
   form: {
+    position: "relative",
     marginHorizontal: 16,
-    marginBottom: 78,
   },
   formFlex: {
     display: "flex",
-    gap: 16,
   },
   title: {
     fontFamily: "SignikaNegative-Medium",
     marginTop: 32,
     marginBottom: 33,
     fontSize: 30,
-    fontWeight: 500,
+    fontWeight: "medium",
     color: "#212121",
     marginLeft: "auto",
     marginRight: "auto",
@@ -157,6 +178,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: "#F6F6F6",
     color: "#212121",
+    marginBottom: 16,
   },
   inputPasswordVisibility: {
     fontFamily: "SignikaNegative-Regular",
