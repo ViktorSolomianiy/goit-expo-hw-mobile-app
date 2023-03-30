@@ -1,14 +1,18 @@
 import { useCallback } from "react";
 import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 
-import { useRoute } from "./assets/router/router";
+import { LoginScreen } from "./assets/Screens/LoginScreen";
+import { RegistrationScreen } from "./assets/Screens/RegistrationScreen";
+import { HomeScreen } from "./assets/Screens/Main/Home";
 
 SplashScreen.preventAutoHideAsync();
 
+const AuthStack = createStackNavigator();
+
 export default function App() {
-  const routing = useRoute(true);
   const [fontsLoaded] = useFonts({
     "SignikaNegative-Medium": require("./assets/fonts/SignikaNegative-Medium.ttf"),
     "SignikaNegative-Light": require("./assets/fonts/SignikaNegative-Light.ttf"),
@@ -28,5 +32,26 @@ export default function App() {
 
   onLayoutRootView();
 
-  return <NavigationContainer>{routing}</NavigationContainer>;
+  return (
+    <NavigationContainer>
+      <AuthStack.Navigator>
+        <AuthStack.Screen
+          name="Login"
+          component={LoginScreen}
+          options={{ headerShown: false }}
+        />
+        <AuthStack.Screen
+          name="Register"
+          component={RegistrationScreen}
+          options={{ headerShown: false }}
+        />
+
+        <AuthStack.Screen
+          name="Home"
+          component={HomeScreen}
+          options={{ headerShown: false }}
+        />
+      </AuthStack.Navigator>
+    </NavigationContainer>
+  );
 }

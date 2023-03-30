@@ -1,13 +1,15 @@
 import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
-
 import { SvgArrowLeft } from "../SvgIcons";
 
-export const CreatePostsScreen = () => {
+export const CreatePostsScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Create Posts</Text>
-        <TouchableOpacity style={styles.btnLogOut}>
+        <TouchableOpacity
+          style={styles.btnLogOut}
+          onPress={() => navigation.navigate("Posts")}
+        >
           <SvgArrowLeft />
         </TouchableOpacity>
       </View>

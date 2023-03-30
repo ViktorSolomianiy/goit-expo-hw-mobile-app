@@ -1,5 +1,4 @@
 import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
-
 import { SvgLogOut } from "../SvgIcons";
 
 export const PostsScreen = ({ navigation }) => {

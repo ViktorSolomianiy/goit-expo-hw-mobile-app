@@ -1,5 +1,4 @@
 import { Circle, Defs, G, Path, Rect, Svg, ClipPath } from "react-native-svg";
-import { TouchableOpacity } from "react-native";
 
 export const SvgAddUserImage = () => {
   return (

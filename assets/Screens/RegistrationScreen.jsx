@@ -17,7 +17,6 @@ import {
 import { useTogglePasswordVisibility } from "../hooks/useTogglePasswordVisibility";
 import { useKeyboardStatus } from "../hooks/useKeyboardStatus";
 import { SvgAddUserImage } from "./SvgIcons";
-import { useRoute } from "../router/router";
 
 const screenHeight = Dimensions.get("window").height;
 const bgImg = require("../images/bg.jpg");

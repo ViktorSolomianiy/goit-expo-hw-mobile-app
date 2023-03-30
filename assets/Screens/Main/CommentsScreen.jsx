@@ -1,5 +1,4 @@
 import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
-
 import { SvgArrowLeft } from "../SvgIcons";
 
 export const CommentsScreen = () => {
