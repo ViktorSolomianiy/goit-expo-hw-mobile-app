@@ -9,29 +9,28 @@ import { ProfileScreen } from "../Screens/Main/ProfileScreen";
 
 import { SvgCreatePost } from "../Screens/SvgIcons";
 import { Feather } from "@expo/vector-icons";
-import { useState } from "react";
 
 const AuthStack = createStackNavigator();
 const MainTab = createBottomTabNavigator();
 
 export const useRoute = (isAuth) => {
-  const [isChecked, setIsChecked] = useState(false);
-
   if (!isAuth) {
     return (
-      <AuthStack.Navigator>
-        <AuthStack.Screen
-          name="Login"
-          component={LoginScreen}
-          options={{ headerShown: false }}
-        />
+      <>
+        <AuthStack.Navigator>
+          <AuthStack.Screen
+            name="Login"
+            component={LoginScreen}
+            options={{ headerShown: false }}
+          />
 
-        <AuthStack.Screen
-          name="Register"
-          component={RegistrationScreen}
-          options={{ headerShown: false }}
-        />
-      </AuthStack.Navigator>
+          <AuthStack.Screen
+            name="Register"
+            component={RegistrationScreen}
+            options={{ headerShown: false }}
+          />
+        </AuthStack.Navigator>
+      </>
     );
   }
   return (

@@ -92,7 +92,10 @@ export const LoginScreen = ({ navigation }) => {
                   <TouchableOpacity
                     style={styles.btn}
                     activeOpacity={0.8}
-                    onPress={() => keyboardHide()}
+                    onPress={() => {
+                      keyboardHide();
+                      navigation.navigate("Posts");
+                    }}
                   >
                     <Text style={styles.btnTitle}>Login</Text>
                   </TouchableOpacity>
