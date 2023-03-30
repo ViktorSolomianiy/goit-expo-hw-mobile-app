@@ -13,26 +13,7 @@ import { Feather } from "@expo/vector-icons";
 const AuthStack = createStackNavigator();
 const MainTab = createBottomTabNavigator();
 
-export const useRoute = (isAuth) => {
-  if (!isAuth) {
-    return (
-      <>
-        <AuthStack.Navigator>
-          <AuthStack.Screen
-            name="Login"
-            component={LoginScreen}
-            options={{ headerShown: false }}
-          />
-
-          <AuthStack.Screen
-            name="Register"
-            component={RegistrationScreen}
-            options={{ headerShown: false }}
-          />
-        </AuthStack.Navigator>
-      </>
-    );
-  }
+const HomeScreen = () => {
   return (
     <MainTab.Navigator
       screenOptions={{
@@ -68,4 +49,66 @@ export const useRoute = (isAuth) => {
       />
     </MainTab.Navigator>
   );
+};
+
+export const useRoute = (isAuth) => {
+  if (isAuth) {
+    return (
+      <>
+        <AuthStack.Navigator>
+          <AuthStack.Screen
+            name="Login"
+            component={LoginScreen}
+            options={{ headerShown: false }}
+          />
+
+          <AuthStack.Screen
+            name="Register"
+            component={RegistrationScreen}
+            options={{ headerShown: false }}
+          />
+          <AuthStack.Screen
+            name="Home"
+            component={HomeScreen}
+            options={{ headerShown: false }}
+          />
+        </AuthStack.Navigator>
+      </>
+    );
+  }
+  // return (
+  //   <MainTab.Navigator
+  //     screenOptions={{
+  //       headerShown: false,
+  //       tabBarShowLabel: false,
+  //       tabBarActiveTintColor: "#FF6C00",
+  //     }}
+  //   >
+  //     <MainTab.Screen
+  //       options={{
+  //         tabBarIcon: ({ focused, size, color }) => (
+  //           <Feather name="grid" size={24} color={color} />
+  //         ),
+  //       }}
+  //       name="Posts"
+  //       component={PostsScreen}
+  //     />
+  //     <MainTab.Screen
+  //       options={{
+  //         tabBarIcon: ({ focused, size, color }) => <SvgCreatePost />,
+  //       }}
+  //       name="Create"
+  //       component={CreatePostsScreen}
+  //     />
+  //     <MainTab.Screen
+  //       options={{
+  //         tabBarIcon: ({ focused, size, color }) => (
+  //           <Feather name="user" size={24} color={color} />
+  //         ),
+  //       }}
+  //       name="Profile"
+  //       component={ProfileScreen}
+  //     />
+  //   </MainTab.Navigator>
+  // );
 };

@@ -2,12 +2,15 @@ import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 
 import { SvgLogOut } from "../SvgIcons";
 
-export const PostsScreen = () => {
+export const PostsScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Publications</Text>
-        <TouchableOpacity style={styles.btnLogOut}>
+        <TouchableOpacity
+          style={styles.btnLogOut}
+          onPress={() => navigation.navigate("Login")}
+        >
           <SvgLogOut />
         </TouchableOpacity>
       </View>

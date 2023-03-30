@@ -12,7 +12,7 @@ import { SvgAddUserImage, SvgLogOut } from "../SvgIcons";
 const screenHeight = Dimensions.get("window").height;
 const bgImg = require("../../images/bg.jpg");
 
-export const ProfileScreen = () => {
+export const ProfileScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Image source={bgImg} style={styles.bgImage} />
@@ -27,7 +27,10 @@ export const ProfileScreen = () => {
               </ImageBackground>
             </View>
           </View>
-          <TouchableOpacity style={styles.btnLogOut}>
+          <TouchableOpacity
+            style={styles.btnLogOut}
+            onPress={() => navigation.navigate("Login")}
+          >
             <SvgLogOut />
           </TouchableOpacity>
           <Text style={styles.title}>Name</Text>

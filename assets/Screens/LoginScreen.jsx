@@ -15,9 +15,9 @@ import {
 
 import { useTogglePasswordVisibility } from "../hooks/useTogglePasswordVisibility";
 import { useKeyboardStatus } from "../hooks/useKeyboardStatus";
+import { useRoute } from "../router/router";
 
 const screenHeight = Dimensions.get("window").height;
-const screenWidth = Dimensions.get("window").width;
 const bgImg = require("../images/bg.jpg");
 const initialState = {
   email: "",
@@ -94,7 +94,7 @@ export const LoginScreen = ({ navigation }) => {
                     activeOpacity={0.8}
                     onPress={() => {
                       keyboardHide();
-                      navigation.navigate("Posts");
+                      navigation.navigate("Home");
                     }}
                   >
                     <Text style={styles.btnTitle}>Login</Text>

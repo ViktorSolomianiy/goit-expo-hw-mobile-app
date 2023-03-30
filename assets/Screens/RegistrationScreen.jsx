@@ -17,6 +17,7 @@ import {
 import { useTogglePasswordVisibility } from "../hooks/useTogglePasswordVisibility";
 import { useKeyboardStatus } from "../hooks/useKeyboardStatus";
 import { SvgAddUserImage } from "./SvgIcons";
+import { useRoute } from "../router/router";
 
 const screenHeight = Dimensions.get("window").height;
 const bgImg = require("../images/bg.jpg");
@@ -120,7 +121,7 @@ export const RegistrationScreen = ({ navigation }) => {
                     activeOpacity={0.8}
                     onPress={() => {
                       keyboardHide();
-                      navigation.navigate("Posts");
+                      navigation.navigate("Home");
                     }}
                   >
                     <Text style={styles.btnTitle}>Register</Text>
