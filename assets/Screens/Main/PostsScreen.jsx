@@ -1,44 +1,24 @@
-import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
-import { SvgLogOut } from "../SvgIcons";
+import { createStackNavigator } from "@react-navigation/stack";
 
-export const PostsScreen = ({ navigation }) => {
+import { DefaultPostsScreen } from "../NestedPostScreens/DefaultPostScreen";
+import { MapScreen } from "../NestedPostScreens/MapScreen";
+import { CommentsScreen } from "../NestedPostScreens/CommentsScreen";
+
+const NestedPostScreens = createStackNavigator();
+
+export const PostsScreen = () => {
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Publications</Text>
-        <TouchableOpacity
-          style={styles.btnLogOut}
-          onPress={() => navigation.navigate("Login")}
-        >
-          <SvgLogOut />
-        </TouchableOpacity>
-      </View>
-    </View>
+    <NestedPostScreens.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <NestedPostScreens.Screen
+        name="DefaultScreen"
+        component={DefaultPostsScreen}
+      />
+      <NestedPostScreens.Screen name="Comments" component={CommentsScreen} />
+      <NestedPostScreens.Screen name="Map" component={MapScreen} />
+    </NestedPostScreens.Navigator>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  header: {
-    position: "relative",
-    width: "100%",
-    borderBottomWidth: 1,
-    borderBottomColor: "#d4d4d4",
-  },
-  headerTitle: {
-    fontFamily: "SignikaNegative-SemiBold",
-    textAlign: "center",
-    marginTop: 55,
-    color: "#212121",
-    marginBottom: 11,
-    fontSize: 20,
-  },
-  btnLogOut: {
-    position: "absolute",
-    right: 19,
-    top: 56,
-  },
-});

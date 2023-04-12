@@ -1,12 +1,15 @@
 import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import { SvgArrowLeft } from "../SvgIcons";
 
-export const CommentsScreen = () => {
+export const CommentsScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Comments</Text>
-        <TouchableOpacity style={styles.btnLogOut}>
+        <TouchableOpacity
+          onPress={() => navigation.navigate("DefaultScreen")}
+          style={styles.btnLogOut}
+        >
           <SvgArrowLeft />
         </TouchableOpacity>
       </View>
