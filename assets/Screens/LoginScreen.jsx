@@ -12,9 +12,15 @@ import {
   Dimensions,
   Image,
 } from "react-native";
+import { useDispatch } from "react-redux";
+
+import { authSignInUser } from "../redux/auth/authOperation";
+import { auth } from "../firebase/config";
 
 import { useTogglePasswordVisibility } from "../hooks/useTogglePasswordVisibility";
 import { useKeyboardStatus } from "../hooks/useKeyboardStatus";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { authSlice } from "../redux/auth/authReducer";
 
 const screenHeight = Dimensions.get("window").height;
 const bgImg = require("../images/bg.jpg");
@@ -24,15 +30,33 @@ const initialState = {
 };
 
 export const LoginScreen = ({ navigation }) => {
+  const [state, setState] = useState(initialState);
   const [isFocusedEmail, setIsEmail] = useState(false);
   const [isFocusedPassword, setIsPassword] = useState(false);
   const { passwordVisibility, rightShow, handlePasswordVisibility } =
     useTogglePasswordVisibility();
   const [isKeyboardStatus] = useKeyboardStatus();
-  const [state, setState] = useState(initialState);
 
-  const keyboardHide = () => {
+  const dispatch = useDispatch();
+
+  const handleSubmit = () => {
     Keyboard.dismiss();
+
+    signInWithEmailAndPassword(auth, state.email, state.password)
+      .then((userCredential) => {
+        const { email } = userCredential.user;
+
+        dispatch(
+          authSlice.actions.authSignInUser({
+            email,
+          })
+        );
+      })
+      .catch((error) => {
+        console.log("error.code:", error.code);
+        console.log("error.message:", error.message);
+      });
+
     setState(initialState);
   };
 
@@ -92,8 +116,7 @@ export const LoginScreen = ({ navigation }) => {
                     style={styles.btn}
                     activeOpacity={0.8}
                     onPress={() => {
-                      keyboardHide();
-                      navigation.navigate("Home");
+                      handleSubmit();
                     }}
                   >
                     <Text style={styles.btnTitle}>Login</Text>

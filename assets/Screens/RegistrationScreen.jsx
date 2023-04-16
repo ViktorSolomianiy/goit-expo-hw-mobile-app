@@ -13,10 +13,15 @@ import {
   Dimensions,
   Image,
 } from "react-native";
+import { useDispatch } from "react-redux";
+
+import { authSlice } from "../redux/auth/authReducer";
+import { auth } from "../firebase/config";
 
 import { useTogglePasswordVisibility } from "../hooks/useTogglePasswordVisibility";
 import { useKeyboardStatus } from "../hooks/useKeyboardStatus";
 import { SvgAddUserImage } from "./SvgIcons";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 
 const screenHeight = Dimensions.get("window").height;
 const bgImg = require("../images/bg.jpg");
@@ -27,16 +32,37 @@ const initialState = {
 };
 
 export const RegistrationScreen = ({ navigation }) => {
+  const [state, setState] = useState(initialState);
   const [isFocusedLogin, setIsFocusedLogin] = useState(false);
   const [isFocusedEmail, setIsEmail] = useState(false);
   const [isFocusedPassword, setIsPassword] = useState(false);
   const { passwordVisibility, rightShow, handlePasswordVisibility } =
     useTogglePasswordVisibility();
   const [isKeyboardStatus] = useKeyboardStatus();
-  const [state, setState] = useState(initialState);
 
-  const keyboardHide = () => {
+  const dispatch = useDispatch();
+
+  const handleSubmit = () => {
     Keyboard.dismiss();
+
+    createUserWithEmailAndPassword(auth, state.email, state.password)
+      .then(async (userCredential) => {
+        await updateProfile(auth.currentUser, { displayName: state.login });
+        const { uid, displayName, email } = await userCredential.user;
+
+        dispatch(
+          authSlice.actions.updateUserProfile({
+            userId: uid,
+            login: displayName,
+            email,
+          })
+        );
+      })
+      .catch((error) => {
+        console.log(error.code);
+        console.log(error.message);
+      });
+
     setState(initialState);
   };
 
@@ -119,8 +145,7 @@ export const RegistrationScreen = ({ navigation }) => {
                     style={styles.btn}
                     activeOpacity={0.8}
                     onPress={() => {
-                      keyboardHide();
-                      navigation.navigate("Home");
+                      handleSubmit();
                     }}
                   >
                     <Text style={styles.btnTitle}>Register</Text>

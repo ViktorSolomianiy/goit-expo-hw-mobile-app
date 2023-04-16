@@ -9,6 +9,8 @@ import {
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 
+import { authSignOutUser } from "../../redux/auth/authOperation";
+
 import { SvgLogOut, SvgCommentsPost } from "../SvgIcons";
 
 export const DefaultPostsScreen = ({ navigation, route }) => {
@@ -18,15 +20,13 @@ export const DefaultPostsScreen = ({ navigation, route }) => {
     if (route.params) setPosts((prev) => [...prev, route.params]);
   }, [route.params]);
 
-  console.log(route.params);
-
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Publications</Text>
         <TouchableOpacity
           style={styles.btnLogOut}
-          onPress={() => navigation.navigate("Login")}
+          onPress={() => authSignOutUser()}
         >
           <SvgLogOut />
         </TouchableOpacity>
