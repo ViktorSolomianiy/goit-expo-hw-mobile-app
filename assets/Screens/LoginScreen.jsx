@@ -14,13 +14,12 @@ import {
 } from "react-native";
 import { useDispatch } from "react-redux";
 
-import { authSignInUser } from "../redux/auth/authOperation";
 import { auth } from "../firebase/config";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { authSlice } from "../redux/auth/authReducer";
 
 import { useTogglePasswordVisibility } from "../hooks/useTogglePasswordVisibility";
 import { useKeyboardStatus } from "../hooks/useKeyboardStatus";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { authSlice } from "../redux/auth/authReducer";
 
 const screenHeight = Dimensions.get("window").height;
 const bgImg = require("../images/bg.jpg");
@@ -47,7 +46,7 @@ export const LoginScreen = ({ navigation }) => {
         const { email } = userCredential.user;
 
         dispatch(
-          authSlice.actions.authSignInUser({
+          authSlice.actions.authSignIn({
             email,
           })
         );

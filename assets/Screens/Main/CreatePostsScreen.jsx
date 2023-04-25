@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import {
   StyleSheet,
   View,
@@ -12,20 +13,27 @@ import { Feather } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useIsFocused } from "@react-navigation/native";
 import * as Location from "expo-location";
+import { nanoid } from "nanoid";
+
+import { storage, database } from "../../firebase/config";
+import { ref, getDownloadURL, uploadBytes } from "firebase/storage";
+import * as db from "firebase/database";
 
 import { SvgArrowLeft, SvgCamera, SvgCameraImage } from "../SvgIcons";
 
 export const CreatePostsScreen = ({ navigation }) => {
-  const [isFocusedName, setIsFocusedName] = useState(false);
-  const [isFocusedLocation, setIsFocusedLocation] = useState(false);
-  const [name, setName] = useState("");
-  const [locateName, setLocateName] = useState("");
-  const [disabled, setDisabled] = useState(true);
-  const [type, setType] = useState(CameraType.front);
-  const [camera, setCamera] = useState(null);
   const [photo, setPhoto] = useState(null);
   const [location, setLocation] = useState(null);
+  const [name, setName] = useState("");
+  const [locateName, setLocateName] = useState("");
+  const [camera, setCamera] = useState(null);
+  const [type, setType] = useState(CameraType.front);
+  const [disabled, setDisabled] = useState(true);
+  const [isFocusedName, setIsFocusedName] = useState(false);
+  const [isFocusedLocation, setIsFocusedLocation] = useState(false);
   const isFocused = useIsFocused();
+
+  const { userId, login, email } = useSelector((state) => state.auth);
 
   useEffect(() => {
     if (name !== "" && locateName !== "") {
@@ -62,7 +70,52 @@ export const CreatePostsScreen = ({ navigation }) => {
   };
 
   const sendPhoto = () => {
+    uploadPostToServer();
     navigation.navigate("DefaultScreen", { photo, name, locateName, location });
+  };
+
+  const uploadPhotoToServer = async () => {
+    const response = await fetch(photo);
+    const file = await response.blob();
+    const fileRef = await ref(storage, `postImage/${nanoid()}`);
+
+    await uploadBytes(fileRef, file).then((snapshot) => {});
+
+    // await getDownloadURL(fileRef)
+    //   .then((url) => {
+    //     setPhotoURL(url);
+    //   })
+    //   .catch((error) => {
+    //     switch (error.code) {
+    //       case "storage/object-not-found":
+    //         console.log(error.code);
+    //         break;
+    //       case "storage/unauthorized":
+    //         console.log(error.code);
+    //         break;
+    //       case "storage/canceled":
+    //         console.log(error.code);
+    //         break;
+    //       case "storage/unknown":
+    //         console.log(error.code);
+    //         break;
+    //     }
+    //   });
+  };
+
+  const uploadPostToServer = async () => {
+    await uploadPhotoToServer();
+
+    await db.set(db.ref(database, `posts/${nanoid()}`), {
+      postId: nanoid(),
+      userId,
+      userName: login,
+      email,
+      postImage: photo,
+      location,
+      name,
+      locateName,
+    });
   };
 
   return (

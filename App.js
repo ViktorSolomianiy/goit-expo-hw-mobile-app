@@ -11,6 +11,7 @@ SplashScreen.preventAutoHideAsync();
 
 export default function App({}) {
   const [fontsLoaded] = useFonts({
+    "SignikaNegative-Bold": require("./assets/fonts/SignikaNegative-Bold.ttf"),
     "SignikaNegative-Medium": require("./assets/fonts/SignikaNegative-Medium.ttf"),
     "SignikaNegative-Light": require("./assets/fonts/SignikaNegative-Light.ttf"),
     "SignikaNegative-Regular": require("./assets/fonts/SignikaNegative-Regular.ttf"),

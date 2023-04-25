@@ -1,39 +1,159 @@
+import { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import {
   StyleSheet,
   View,
   Text,
-  ImageBackground,
   Dimensions,
   Image,
   TouchableOpacity,
+  FlatList,
 } from "react-native";
-import { SvgAddUserImage, SvgLogOut } from "../SvgIcons";
+import * as ImagePicker from "expo-image-picker";
+
+import { authSignOutUser } from "../../redux/auth/authOperation";
+import { database } from "../../firebase/config";
+import * as db from "firebase/database";
+
+import {
+  SvgAddUserImage,
+  SvgCommentsPost,
+  SvgLogOut,
+  SvgRemoveUserImage,
+} from "../SvgIcons";
+import { Feather } from "@expo/vector-icons";
+import { authSlice } from "../../redux/auth/authReducer";
 
 const screenHeight = Dimensions.get("window").height;
 const bgImg = require("../../images/bg.jpg");
 
 export const ProfileScreen = ({ navigation }) => {
+  const [userPosts, setUserPosts] = useState(null);
+  const { userId, avatar, login } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    getUserPosts();
+
+    // console.log(userPosts);
+  }, []);
+
+  const signOut = () => {
+    dispatch(authSignOutUser());
+  };
+
+  const getUserPosts = async () => {
+    const postsUserRef = await db.ref(database, `posts/`);
+
+    await db.onValue(postsUserRef, async (snapshot) => {
+      const data = await snapshot.val();
+      setUserPosts(
+        Object.entries(data).map((item) => ({ ...item[1], postId: item[0] }))
+      );
+    });
+  };
+
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      dispatch(
+        authSlice.actions.authAddAvatar({ avatar: result.assets[0].uri })
+      );
+    }
+  };
+
+  const removeImage = () => {
+    dispatch(authSlice.actions.authAddAvatar({ avatar: null }));
+  };
+
   return (
     <View style={styles.container}>
       <Image source={bgImg} style={styles.bgImage} />
       <View style={styles.containerForm}>
-        <View style={styles.form}>
-          <View style={styles.absoluteImg}>
-            <View style={styles.centetImg}>
-              <ImageBackground style={styles.userImg}>
-                <View style={styles.addImgIcon}>
-                  <SvgAddUserImage />
-                </View>
-              </ImageBackground>
-            </View>
+        <View style={styles.absoluteImg}>
+          <View style={styles.centerImg}>
+            <Image style={styles.userImg} source={{ uri: avatar }} />
+            {avatar ? (
+              <TouchableOpacity
+                style={styles.removeImgIcon}
+                onPress={removeImage}
+              >
+                <SvgRemoveUserImage />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity style={styles.addImgIcon} onPress={pickImage}>
+                <SvgAddUserImage />
+              </TouchableOpacity>
+            )}
           </View>
-          <TouchableOpacity
-            style={styles.btnLogOut}
-            onPress={() => navigation.navigate("Login")}
-          >
-            <SvgLogOut />
-          </TouchableOpacity>
-          <Text style={styles.title}>Name</Text>
+        </View>
+        <TouchableOpacity style={styles.btnLogOut} onPress={signOut}>
+          <SvgLogOut />
+        </TouchableOpacity>
+        <Text style={styles.title}>{login}</Text>
+
+        <View style={styles.main}>
+          <FlatList
+            showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}
+            data={userPosts}
+            keyExtractor={(item) => item.postId}
+            renderItem={({ item }) => {
+              const isUserPosts = item.userId === userId;
+
+              return (
+                isUserPosts && (
+                  <View style={styles.postContainer}>
+                    <Image
+                      style={styles.imgPost}
+                      source={{ uri: item.postImage }}
+                    />
+                    <Text style={styles.postTitle}>{item.name}</Text>
+                    <View style={styles.commentsMapContainer}>
+                      <TouchableOpacity
+                        style={styles.commentsBtn}
+                        onPress={() =>
+                          navigation.navigate("Comments", {
+                            photo: item.postImage,
+                            postId: item.postId,
+                          })
+                        }
+                      >
+                        <SvgCommentsPost />
+                        <Text style={styles.commentsCount}>
+                          {item.comments
+                            ? Object.keys(item.comments).length
+                            : "0"}
+                        </Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.mapBtn}
+                        onPress={() =>
+                          navigation.navigate("Map", {
+                            location: item.location.coords,
+                          })
+                        }
+                      >
+                        <Feather
+                          name="map-pin"
+                          size={24}
+                          color="#BDBDBD"
+                          style={{ marginRight: 8 }}
+                        />
+                        <Text style={styles.mapLink}>{item.locateName}</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )
+              );
+            }}
+          />
         </View>
       </View>
     </View>
@@ -46,11 +166,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     justifyContent: "flex-end",
   },
-  containerForm: {
-    backgroundColor: "#ffffff",
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
-  },
   bgImage: {
     position: "absolute",
     left: 0,
@@ -58,12 +173,47 @@ const styles = StyleSheet.create({
     width: "100%",
     height: screenHeight,
   },
-  form: {
+  containerForm: {
     position: "relative",
-    marginHorizontal: 16,
+    backgroundColor: "#ffffff",
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+    marginTop: 347,
+    paddingHorizontal: 16,
   },
-  formFlex: {
-    display: "flex",
+  btnLogOut: {
+    position: "absolute",
+    right: 16,
+    top: 24,
+  },
+  absoluteImg: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: -60,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  centerImg: {
+    position: "relative",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  userImg: {
+    width: 120,
+    height: 120,
+    borderRadius: 16,
+    backgroundColor: "#F6F6F6",
+  },
+  addImgIcon: {
+    position: "absolute",
+    right: -12,
+    top: 80,
+  },
+  removeImgIcon: {
+    position: "absolute",
+    right: -18,
+    top: 74,
   },
   title: {
     fontFamily: "SignikaNegative-Medium",
@@ -75,33 +225,47 @@ const styles = StyleSheet.create({
     marginLeft: "auto",
     marginRight: "auto",
   },
-  btnLogOut: {
-    position: "absolute",
-    right: 3,
-    top: 24,
+  main: {
+    marginBottom: 320,
   },
-  absoluteImg: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
+  postContainer: {
+    marginBottom: 35,
+  },
+  imgPost: {
+    height: 240,
+    width: "100%",
+    borderRadius: 8,
+  },
+  postTitle: {
+    fontSize: 16,
+    fontFamily: "SignikaNegative-Medium",
+    color: "#212121",
+    marginTop: 8,
+  },
+  commentsMapContainer: {
     alignItems: "center",
-    justifyContent: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 11,
   },
-  centetImg: {
+  commentsBtn: {
     alignItems: "center",
-    justifyContent: "center",
+    flexDirection: "row",
   },
-  userImg: {
-    width: 120,
-    height: 120,
-    bottom: 105,
-    borderRadius: 16,
-    backgroundColor: "#F6F6F6",
+  commentsCount: {
+    fontFamily: "SignikaNegative-Regular",
+    fontSize: 16,
+    marginLeft: 9,
+    color: "#BDBDBD",
   },
-  addImgIcon: {
-    position: "absolute",
-    right: -12,
-    top: 80,
+  mapLink: {
+    fontSize: 16,
+    fontFamily: "SignikaNegative-Regular",
+    color: "#212121",
+    textDecorationLine: "underline",
+  },
+  mapBtn: {
+    alignItems: "center",
+    flexDirection: "row",
   },
 });

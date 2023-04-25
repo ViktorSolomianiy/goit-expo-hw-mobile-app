@@ -30,6 +30,7 @@ export const HomeScreen = () => {
       <MainTab.Screen
         options={{
           tabBarIcon: ({ focused, size, color }) => <SvgCreatePost />,
+          tabBarStyle: { display: "none" },
         }}
         name="Create"
         component={CreatePostsScreen}

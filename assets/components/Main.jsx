@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
@@ -7,10 +7,7 @@ import { HomeScreen } from "../Screens/Main/Home";
 import { LoginScreen } from "../Screens/LoginScreen";
 import { RegistrationScreen } from "../Screens/RegistrationScreen";
 
-import { onAuthStateChanged } from "firebase/auth";
 import { authStateChangeUser } from "../redux/auth/authOperation";
-import { auth } from "../firebase/config";
-import { authSlice } from "../redux/auth/authReducer";
 
 const AuthStack = createStackNavigator();
 
@@ -21,21 +18,6 @@ export const Main = () => {
   useEffect(() => {
     dispatch(authStateChangeUser());
   }, []);
-
-  //   onAuthStateChanged(auth, (user) => {
-  //     if (user) {
-  //       setIsAuth(false);
-  //       const { uid, displayName, email } = auth.currentUser;
-
-  //       dispatch(
-  //         authSlice.actions.updateUserProfile({
-  //           userId: uid,
-  //           login: displayName,
-  //           email,
-  //         })
-  //       );
-  //     }
-  //   });
 
   return (
     <NavigationContainer>
