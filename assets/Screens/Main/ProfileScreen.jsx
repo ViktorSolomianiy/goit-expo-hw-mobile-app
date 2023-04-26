@@ -34,8 +34,6 @@ export const ProfileScreen = ({ navigation }) => {
 
   useEffect(() => {
     getUserPosts();
-
-    // console.log(userPosts);
   }, []);
 
   const signOut = () => {

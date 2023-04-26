@@ -14,12 +14,13 @@ import {
 } from "react-native";
 import { useDispatch } from "react-redux";
 
-import { auth } from "../firebase/config";
+import { auth, storage } from "../firebase/config";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { authSlice } from "../redux/auth/authReducer";
 
 import { useTogglePasswordVisibility } from "../hooks/useTogglePasswordVisibility";
 import { useKeyboardStatus } from "../hooks/useKeyboardStatus";
+import { getDownloadURL, ref } from "firebase/storage";
 
 const screenHeight = Dimensions.get("window").height;
 const bgImg = require("../images/bg.jpg");
@@ -42,14 +43,11 @@ export const LoginScreen = ({ navigation }) => {
     Keyboard.dismiss();
 
     signInWithEmailAndPassword(auth, state.email, state.password)
-      .then((userCredential) => {
-        const { email } = userCredential.user;
+      .then(async (userCredential) => {
+        const { uid, displayName, email } = userCredential.user;
 
-        dispatch(
-          authSlice.actions.authSignIn({
-            email,
-          })
-        );
+        currentUser = { userId: uid, login: displayName, email };
+        dispatch(authSlice.actions.updateUserProfile(currentUser));
       })
       .catch((error) => {
         console.log("error.code:", error.code);

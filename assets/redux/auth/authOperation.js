@@ -53,20 +53,15 @@ export const authSignOutUser = () => async (dispatch, getState) => {
   dispatch(authSlice.actions.authSingOut());
 };
 
-export const authStateChangeUser = () => async (dispatch, getState) => {
-  await onAuthStateChanged(auth, (user) => {
+export const authStateChangeUser = () => {
+  let currentUser = undefined;
+  onAuthStateChanged(auth, (user) => {
+    console.log("i'm working cause i'm slut!!!!");
     if (user) {
       const { uid, displayName, email } = auth.currentUser;
 
-      dispatch(
-        authSlice.actions.updateUserProfile({
-          userId: uid,
-          login: displayName,
-          email,
-        })
-      );
-
-      dispatch(authSlice.actions.authStateChange({ stateChange: true }));
+      currentUser = { userId: uid, login: displayName, email };
     }
   });
+  return currentUser;
 };

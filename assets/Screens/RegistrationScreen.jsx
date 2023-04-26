@@ -25,7 +25,7 @@ import { useTogglePasswordVisibility } from "../hooks/useTogglePasswordVisibilit
 import { useKeyboardStatus } from "../hooks/useKeyboardStatus";
 import { SvgAddUserImage, SvgRemoveUserImage } from "./SvgIcons";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { ref, uploadBytes } from "firebase/storage";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 const screenHeight = Dimensions.get("window").height;
 const bgImg = require("../images/bg.jpg");
@@ -50,15 +50,17 @@ export const RegistrationScreen = ({ navigation }) => {
 
   const handleSubmit = () => {
     Keyboard.dismiss();
-    uploadUserToServer();
 
     createUserWithEmailAndPassword(auth, state.email, state.password)
       .then(async (userCredential) => {
-        await updateProfile(auth.currentUser, { displayName: state.login });
+        console.log("then is triggered");
+        await updateProfile(auth.currentUser, {
+          displayName: state.login,
+        });
         const { uid, displayName, email } = await userCredential.user;
 
-        console.log("uid", uid);
-
+        await uploadAvatarToServer(uid);
+        console.log("before dispatch user to store");
         dispatch(
           authSlice.actions.updateUserProfile({
             userId: uid,
@@ -75,50 +77,12 @@ export const RegistrationScreen = ({ navigation }) => {
     setState(initialState);
   };
 
-  const uploadAvatarToServer = async () => {
-    console.log("is function trigerred");
+  const uploadAvatarToServer = async (uid) => {
     const response = await fetch(avatar);
-    console.log("response", response);
     const file = await response.blob();
-    console.log("file", file);
-    console.log("userId", userId);
-    const fileRef = await ref(storage, `userAvatar/${userId}`);
-    console.log("fileRef", fileRef);
+    const fileRef = await ref(storage, `userAvatar/${uid}`);
 
-    await uploadBytes(fileRef, file).then((snapshot) => {});
-
-    // await getDownloadURL(fileRef)
-    //   .then((url) => {
-    //     // setAvatar(url);
-    //     dispatch(authSlice.actions.authAddAvatar({ avatar: url }));
-    //   })
-    //   .catch((error) => {
-    //     switch (error.code) {
-    //       case "storage/object-not-found":
-    //         console.log(error.code);
-    //         break;
-    //       case "storage/unauthorized":
-    //         console.log(error.code);
-    //         break;
-    //       case "storage/canceled":
-    //         console.log(error.code);
-    //         break;
-    //       case "storage/unknown":
-    //         console.log(error.code);
-    //         break;
-    //     }
-    //   });
-  };
-
-  const uploadUserToServer = async () => {
-    await uploadAvatarToServer();
-
-    await db.set(db.ref(database, `users/${userId}`), {
-      userId,
-      userName: login,
-      email: state.email,
-      avatar,
-    });
+    await uploadBytes(fileRef, file).catch((err) => console.log("err:", err));
   };
 
   const pickImage = async () => {

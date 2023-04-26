@@ -8,9 +8,7 @@ import {
   TextInput,
   Image,
 } from "react-native";
-import { Camera, CameraType } from "expo-camera";
 import { Feather } from "@expo/vector-icons";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useIsFocused } from "@react-navigation/native";
 import * as Location from "expo-location";
 import { nanoid } from "nanoid";
@@ -19,15 +17,14 @@ import { storage, database } from "../../firebase/config";
 import { ref, getDownloadURL, uploadBytes } from "firebase/storage";
 import * as db from "firebase/database";
 
-import { SvgArrowLeft, SvgCamera, SvgCameraImage } from "../SvgIcons";
+import { SvgArrowLeft, SvgCameraImage } from "../SvgIcons";
+import { CustomCamera } from "../CustomCamera";
 
 export const CreatePostsScreen = ({ navigation }) => {
   const [photo, setPhoto] = useState(null);
   const [location, setLocation] = useState(null);
   const [name, setName] = useState("");
   const [locateName, setLocateName] = useState("");
-  const [camera, setCamera] = useState(null);
-  const [type, setType] = useState(CameraType.front);
   const [disabled, setDisabled] = useState(true);
   const [isFocusedName, setIsFocusedName] = useState(false);
   const [isFocusedLocation, setIsFocusedLocation] = useState(false);
@@ -44,6 +41,7 @@ export const CreatePostsScreen = ({ navigation }) => {
   useEffect(() => {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
+      console.log(status);
 
       if (status !== "granted") {
         console.log("Permission to access location was denied");
@@ -58,63 +56,41 @@ export const CreatePostsScreen = ({ navigation }) => {
     setPhoto(null);
   }, []);
 
-  function toggleCameraType() {
-    setType((current) =>
-      current === CameraType.back ? CameraType.front : CameraType.back
-    );
-  }
-
-  const takePhoto = async () => {
-    const photo = await camera.takePictureAsync();
-    setPhoto(photo.uri);
-  };
-
-  const sendPhoto = () => {
-    uploadPostToServer();
-    navigation.navigate("DefaultScreen", { photo, name, locateName, location });
-  };
-
   const uploadPhotoToServer = async () => {
     const response = await fetch(photo);
     const file = await response.blob();
-    const fileRef = await ref(storage, `postImage/${nanoid()}`);
+    const nanoId = nanoid();
+    const fileRef = await ref(storage, `postImage/${nanoId}`);
 
-    await uploadBytes(fileRef, file).then((snapshot) => {});
+    await uploadBytes(fileRef, file);
 
-    // await getDownloadURL(fileRef)
-    //   .then((url) => {
-    //     setPhotoURL(url);
-    //   })
-    //   .catch((error) => {
-    //     switch (error.code) {
-    //       case "storage/object-not-found":
-    //         console.log(error.code);
-    //         break;
-    //       case "storage/unauthorized":
-    //         console.log(error.code);
-    //         break;
-    //       case "storage/canceled":
-    //         console.log(error.code);
-    //         break;
-    //       case "storage/unknown":
-    //         console.log(error.code);
-    //         break;
-    //     }
-    //   });
+    const url = await getDownloadURL(ref(storage, `postImage/${nanoId}`));
+    return url;
   };
 
   const uploadPostToServer = async () => {
-    await uploadPhotoToServer();
+    const url = await uploadPhotoToServer();
 
     await db.set(db.ref(database, `posts/${nanoid()}`), {
       postId: nanoid(),
       userId,
       userName: login,
       email,
-      postImage: photo,
+      postImage: url,
       location,
       name,
       locateName,
+    });
+
+    setName("");
+    setPhoto(null);
+    setLocateName("");
+
+    navigation.navigate("DefaultScreen", {
+      photo,
+      name,
+      locateName,
+      location,
     });
   };
 
@@ -185,7 +161,7 @@ export const CreatePostsScreen = ({ navigation }) => {
                 disabled={disabled}
                 style={disabled ? styles.disabledBtn : styles.btn}
                 activeOpacity={0.8}
-                onPress={sendPhoto}
+                onPress={uploadPostToServer}
               >
                 <Text style={styles.btnTitle}>Publish</Text>
               </TouchableOpacity>
@@ -193,30 +169,7 @@ export const CreatePostsScreen = ({ navigation }) => {
           </View>
         </>
       ) : (
-        <>
-          {isFocused && (
-            <Camera style={styles.camera} type={type} ref={setCamera}>
-              <TouchableOpacity
-                style={styles.cameraBtn}
-                activeOpacity={0.8}
-                onPress={takePhoto}
-              >
-                <SvgCamera />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.cameraBtn}
-                activeOpacity={0.8}
-                onPress={toggleCameraType}
-              >
-                <MaterialCommunityIcons
-                  name="camera-flip-outline"
-                  size={24}
-                  color="#BDBDBD"
-                />
-              </TouchableOpacity>
-            </Camera>
-          )}
-        </>
+        <>{isFocused && <CustomCamera setPhoto={setPhoto} />}</>
       )}
     </View>
   );
@@ -250,20 +203,20 @@ const styles = StyleSheet.create({
     left: 19,
     top: 56,
   },
-  camera: {
-    flex: 1,
-    alignItems: "flex-end",
-    justifyContent: "flex-end",
-    flexDirection: "row",
-  },
-  cameraBtn: {
-    marginLeft: "auto",
-    marginRight: "auto",
-    marginBottom: 30,
-    borderRadius: 50,
-    padding: 20,
-    backgroundColor: "#fff",
-  },
+  // camera: {
+  //   flex: 1,
+  //   alignItems: "flex-end",
+  //   justifyContent: "flex-end",
+  //   flexDirection: "row",
+  // },
+  // cameraBtn: {
+  //   marginLeft: "auto",
+  //   marginRight: "auto",
+  //   marginBottom: 30,
+  //   borderRadius: 50,
+  //   padding: 20,
+  //   backgroundColor: "#fff",
+  // },
   cameraBtnImage: {
     position: "absolute",
     borderRadius: 50,
