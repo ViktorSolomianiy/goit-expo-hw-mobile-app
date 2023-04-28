@@ -1,7 +1,7 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons/build/Icons";
 import { Camera, CameraType } from "expo-camera";
-import { useEffect, useState } from "react";
-import { Button, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useState } from "react";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { SvgCamera } from "./SvgIcons";
 
 export const CustomCamera = ({ setPhoto }) => {
@@ -9,26 +9,12 @@ export const CustomCamera = ({ setPhoto }) => {
   const [camera, setCamera] = useState(null);
   const [permission, requestPermission] = Camera.useCameraPermissions();
 
-  //   useEffect(() => {
-  //     if (!permission.granted) {
-  //       requestPermission();
-  //     }
-  //   }, []);
-
   if (!permission) {
     return <View />;
   }
 
   if (!permission.granted) {
-    // Camera permissions are not granted yet
-    return (
-      <View style={styles.container}>
-        <Text style={{ textAlign: "center" }}>
-          We need your permission to show the camera
-        </Text>
-        <Button onPress={requestPermission} title="grant permission" />
-      </View>
-    );
+    return requestPermission();
   }
 
   const takePhoto = async () => {

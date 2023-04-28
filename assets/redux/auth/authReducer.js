@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import authOperations from "./authOperation";
 
 const state = {
   userId: null,
@@ -6,12 +7,17 @@ const state = {
   email: null,
   avatar: null,
   stateChange: false,
+  isBottomBarShown: true,
 };
 
 export const authSlice = createSlice({
   name: "auth",
   initialState: state,
   reducers: {
+    buttomBarShown: (state, { payload }) => ({
+      ...state,
+      isBottomBarShown: payload,
+    }),
     updateUserAvatar: (state, { payload }) => ({
       ...state,
       avatar: payload,
@@ -35,5 +41,13 @@ export const authSlice = createSlice({
       ...state,
       avatar: payload.avatar,
     }),
+  },
+  extraReducers: (builder) => {
+    builder.addCase(
+      authOperations.addAvatar.fulfilled,
+      (state, { payload }) => {
+        return { ...state, avatar: payload };
+      }
+    );
   },
 });

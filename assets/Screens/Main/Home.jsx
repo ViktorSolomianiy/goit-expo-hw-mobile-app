@@ -6,13 +6,17 @@ import { ProfileScreen } from "../Main/ProfileScreen";
 
 import { SvgCreatePost } from "../SvgIcons";
 import { Feather } from "@expo/vector-icons";
+import { useSelector } from "react-redux";
 
 const MainTab = createBottomTabNavigator();
 
 export const HomeScreen = () => {
+  const { isBottomBarShown } = useSelector((state) => state.auth);
+
   return (
     <MainTab.Navigator
       screenOptions={{
+        tabBarStyle: isBottomBarShown ? {} : { display: "none" },
         headerShown: false,
         tabBarShowLabel: false,
         tabBarActiveTintColor: "#FF6C00",

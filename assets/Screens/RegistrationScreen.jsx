@@ -1,11 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   TextInput,
   StyleSheet,
   Text,
   TouchableOpacity,
-  ImageBackground,
   Keyboard,
   Pressable,
   KeyboardAvoidingView,
@@ -14,18 +13,16 @@ import {
   Image,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
-import * as ImagePicker from "expo-image-picker";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 
-import { authSignUpUser } from "../redux/auth/authOperation";
 import { authSlice } from "../redux/auth/authReducer";
-import { auth, database, storage } from "../firebase/config";
-import * as db from "firebase/database";
+import { auth } from "../firebase/config";
+import authOperations from "../redux/auth/authOperation";
 
 import { useTogglePasswordVisibility } from "../hooks/useTogglePasswordVisibility";
 import { useKeyboardStatus } from "../hooks/useKeyboardStatus";
-import { SvgAddUserImage, SvgRemoveUserImage } from "./SvgIcons";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+
+import { Avatar } from "../components/Avatar";
 
 const screenHeight = Dimensions.get("window").height;
 const bgImg = require("../images/bg.jpg");
@@ -36,31 +33,34 @@ const initialState = {
 };
 
 export const RegistrationScreen = ({ navigation }) => {
+  const { avatar: customAvatar } = useSelector((state) => state.auth);
+  const [avatar, setAvatar] = useState(null);
   const [state, setState] = useState(initialState);
   const [isFocusedLogin, setIsFocusedLogin] = useState(false);
   const [isFocusedEmail, setIsEmail] = useState(false);
   const [isFocusedPassword, setIsPassword] = useState(false);
+
   const { passwordVisibility, rightShow, handlePasswordVisibility } =
     useTogglePasswordVisibility();
   const [isKeyboardStatus] = useKeyboardStatus();
-  const [avatar, setAvatar] = useState(null);
-  const { userId } = useSelector((state) => state.auth);
-
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    setAvatar(customAvatar);
+  }, [customAvatar]);
 
   const handleSubmit = () => {
     Keyboard.dismiss();
 
     createUserWithEmailAndPassword(auth, state.email, state.password)
       .then(async (userCredential) => {
-        console.log("then is triggered");
         await updateProfile(auth.currentUser, {
           displayName: state.login,
         });
         const { uid, displayName, email } = await userCredential.user;
 
-        await uploadAvatarToServer(uid);
-        console.log("before dispatch user to store");
+        dispatch(authOperations.addAvatar({ uid, avatar }));
+
         dispatch(
           authSlice.actions.updateUserProfile({
             userId: uid,
@@ -77,31 +77,6 @@ export const RegistrationScreen = ({ navigation }) => {
     setState(initialState);
   };
 
-  const uploadAvatarToServer = async (uid) => {
-    const response = await fetch(avatar);
-    const file = await response.blob();
-    const fileRef = await ref(storage, `userAvatar/${uid}`);
-
-    await uploadBytes(fileRef, file).catch((err) => console.log("err:", err));
-  };
-
-  const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      setAvatar(result.assets[0].uri);
-    }
-  };
-
-  const removeImage = () => {
-    dispatch(authSlice.actions.authAddAvatar({ avatar: null }));
-  };
-
   const marginBottomForm = isKeyboardStatus === "Keyboard Shown" ? 32 : 78;
   const topImage = isKeyboardStatus === "Keyboard Shown" ? -350 : -485;
 
@@ -115,21 +90,7 @@ export const RegistrationScreen = ({ navigation }) => {
               <View style={{ ...styles.absoluteImg, top: topImage }}>
                 <View style={styles.centetImg}>
                   <Image style={styles.userImg} source={{ uri: avatar }} />
-                  {avatar ? (
-                    <TouchableOpacity
-                      style={styles.removeImgIcon}
-                      onPress={removeImage}
-                    >
-                      <SvgRemoveUserImage />
-                    </TouchableOpacity>
-                  ) : (
-                    <TouchableOpacity
-                      style={styles.addImgIcon}
-                      onPress={pickImage}
-                    >
-                      <SvgAddUserImage />
-                    </TouchableOpacity>
-                  )}
+                  <Avatar setAvatar={setAvatar} avatar={avatar} />
                 </View>
               </View>
 
@@ -326,15 +287,5 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 16,
     backgroundColor: "#F6F6F6",
-  },
-  addImgIcon: {
-    position: "absolute",
-    right: -12,
-    top: 80,
-  },
-  removeImgIcon: {
-    position: "absolute",
-    right: -18,
-    top: 74,
   },
 });

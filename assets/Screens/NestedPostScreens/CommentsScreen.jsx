@@ -15,15 +15,18 @@ import { nanoid } from "nanoid";
 import { database } from "../../firebase/config";
 import * as db from "firebase/database";
 import { filterCommets } from "../../helpers/filterComments";
-import { formatDate } from "../../helpers/formatDate";
 
 import { SvgArrowLeft, SvgSendComments } from "../SvgIcons";
+import { AuthorComment } from "../../components/AuthorComment";
+import { UserComment } from "../../components/UserComment";
+import { useButtomBarShown } from "../../hooks/useButtomBarShown";
 
 export const CommentsScreen = ({ navigation, route }) => {
   const [comment, setComment] = useState("");
   const [allComments, setAllComments] = useState(null);
   const { login, userId } = useSelector((state) => state.auth);
   const { photo, postId } = route.params;
+  const _ = useButtomBarShown();
 
   useEffect(() => {
     getAllComments();
@@ -76,21 +79,20 @@ export const CommentsScreen = ({ navigation, route }) => {
             keyExtractor={(item) => item.commentId}
             renderItem={({ item }) => {
               const isUsersComment = item.ownerId === userId;
+              console.log(item);
 
               return isUsersComment ? (
-                <View style={styles.commentsContainer}>
-                  <Image style={styles.commentAvatar} />
-                  <View style={styles.commentBox}>
-                    <Text style={styles.textComment}>{item.comment}</Text>
-                    <View style={styles.timeBox}>
-                      <Text style={styles.textTimeInfo}>
-                        {formatDate(item.currentDate)}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
+                <AuthorComment
+                  currentDate={item.currentDate}
+                  comment={item.comment}
+                  ownerId={item.ownerId}
+                />
               ) : (
-                <Text>Semen cum</Text>
+                <UserComment
+                  currentDate={item.currentDate}
+                  comment={item.comment}
+                  ownerId={item.ownerId}
+                />
               );
             }}
           />
@@ -144,7 +146,8 @@ const styles = StyleSheet.create({
   },
   commentsMain: {
     flex: 1,
-    marginHorizontal: 16,
+    paddingLeft: 16,
+    paddingRight: 16,
   },
   img: {
     height: 240,
@@ -178,42 +181,5 @@ const styles = StyleSheet.create({
   },
   commentsContainerAll: {
     marginBottom: 31,
-  },
-  commentsContainer: {
-    flexDirection: "row",
-  },
-  commentAvatar: {
-    width: 28,
-    height: 28,
-    borderRadius: 100,
-    backgroundColor: "#f3f3f3",
-    marginRight: 16,
-  },
-  commentBox: {
-    width: "100%",
-    padding: 16,
-    marginBottom: 24,
-    backgroundColor: "#f3f3f3",
-    borderTopRightRadius: 6,
-    borderBottomRightRadius: 6,
-    borderBottomLeftRadius: 6,
-  },
-  textComment: {
-    fontFamily: "SignikaNegative-Regular",
-    fontSize: 14,
-    marginRight: 35,
-    color: "#212121",
-  },
-  timeBox: {
-    alignItems: "flex-end",
-  },
-  textTimeInfo: {
-    fontFamily: "SignikaNegative-Regular",
-    fontSize: 10,
-    marginTop: 8,
-    marginRight: 40,
-    color: "#BDBDBD",
-    alignItems: "flex-end",
-    justifyContent: "flex-end",
   },
 });

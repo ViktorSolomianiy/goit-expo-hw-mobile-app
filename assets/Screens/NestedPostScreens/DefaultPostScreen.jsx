@@ -1,23 +1,15 @@
 import { useState, useEffect } from "react";
-import {
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  FlatList,
-  Image,
-  SafeAreaView,
-} from "react-native";
+import { StyleSheet, View, Text, TouchableOpacity, Image } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 
 import { authSignOutUser } from "../../redux/auth/authOperation";
 import { database } from "../../firebase/config";
 import * as db from "firebase/database";
 
-import { SvgLogOut, SvgCommentsPost } from "../SvgIcons";
-import { Feather } from "@expo/vector-icons";
+import { SvgLogOut } from "../SvgIcons";
+import { PostsList } from "../../components/PostsList";
 
-export const DefaultPostsScreen = ({ navigation, route }) => {
+export const DefaultPostsScreen = ({ navigation }) => {
   const [posts, setPosts] = useState([]);
   const { login, email, avatar } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
@@ -61,61 +53,7 @@ export const DefaultPostsScreen = ({ navigation, route }) => {
       </View>
 
       <View style={styles.main}>
-        <SafeAreaView>
-          <FlatList
-            showsVerticalScrollIndicator={false}
-            showsHorizontalScrollIndicator={false}
-            data={posts}
-            keyExtractor={(item) => item.postId}
-            renderItem={({ item }) => {
-              // console.log(item);
-
-              return (
-                <View style={styles.postContainer}>
-                  <Image
-                    style={styles.imgPost}
-                    source={{ uri: item.postImage }}
-                  />
-                  <Text style={styles.postTitle}>{item.name}</Text>
-                  <View style={styles.commentsMapContainer}>
-                    <TouchableOpacity
-                      style={styles.commentsBtn}
-                      onPress={() =>
-                        navigation.navigate("Comments", {
-                          photo: item.postImage,
-                          postId: item.postId,
-                        })
-                      }
-                    >
-                      <SvgCommentsPost />
-                      <Text style={styles.commentsCount}>
-                        {item.comments
-                          ? Object.keys(item.comments).length
-                          : "0"}
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.mapBtn}
-                      onPress={() =>
-                        navigation.navigate("Map", {
-                          location: item.location.coords,
-                        })
-                      }
-                    >
-                      <Feather
-                        name="map-pin"
-                        size={24}
-                        color="#BDBDBD"
-                        style={{ marginRight: 8 }}
-                      />
-                      <Text style={styles.mapLink}>{item.locateName}</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              );
-            }}
-          />
-        </SafeAreaView>
+        <PostsList posts={posts} navigation={navigation} />
       </View>
     </View>
   );
@@ -172,45 +110,5 @@ const styles = StyleSheet.create({
   main: {
     marginHorizontal: 16,
     marginBottom: 200,
-  },
-  postContainer: {
-    marginBottom: 35,
-  },
-  imgPost: {
-    height: 240,
-    width: "100%",
-    borderRadius: 8,
-  },
-  postTitle: {
-    fontSize: 16,
-    fontFamily: "SignikaNegative-Medium",
-    color: "#212121",
-    marginTop: 8,
-  },
-  commentsMapContainer: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 11,
-  },
-  commentsBtn: {
-    alignItems: "center",
-    flexDirection: "row",
-  },
-  commentsCount: {
-    fontFamily: "SignikaNegative-Regular",
-    fontSize: 16,
-    marginLeft: 9,
-    color: "#BDBDBD",
-  },
-  mapLink: {
-    fontSize: 16,
-    fontFamily: "SignikaNegative-Regular",
-    color: "#212121",
-    textDecorationLine: "underline",
-  },
-  mapBtn: {
-    alignItems: "center",
-    flexDirection: "row",
   },
 });

@@ -8,15 +8,17 @@ import {
   TextInput,
   Image,
 } from "react-native";
-import { Feather } from "@expo/vector-icons";
+
 import { useIsFocused } from "@react-navigation/native";
 import * as Location from "expo-location";
+import { useKeyboardStatus } from "../../hooks/useKeyboardStatus";
 import { nanoid } from "nanoid";
 
 import { storage, database } from "../../firebase/config";
 import { ref, getDownloadURL, uploadBytes } from "firebase/storage";
 import * as db from "firebase/database";
 
+import { Feather, EvilIcons } from "@expo/vector-icons";
 import { SvgArrowLeft, SvgCameraImage } from "../SvgIcons";
 import { CustomCamera } from "../CustomCamera";
 
@@ -28,6 +30,7 @@ export const CreatePostsScreen = ({ navigation }) => {
   const [disabled, setDisabled] = useState(true);
   const [isFocusedName, setIsFocusedName] = useState(false);
   const [isFocusedLocation, setIsFocusedLocation] = useState(false);
+  const [isKeyboardStatus] = useKeyboardStatus();
   const isFocused = useIsFocused();
 
   const { userId, login, email } = useSelector((state) => state.auth);
@@ -41,15 +44,13 @@ export const CreatePostsScreen = ({ navigation }) => {
   useEffect(() => {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
-      console.log(status);
 
       if (status !== "granted") {
         console.log("Permission to access location was denied");
         return;
       }
 
-      let location = await Location.getCurrentPositionAsync({});
-
+      const location = await Location.getCurrentPositionAsync({});
       setLocation(location);
     })();
 
@@ -82,9 +83,8 @@ export const CreatePostsScreen = ({ navigation }) => {
       locateName,
     });
 
-    setName("");
+    resetInputs();
     setPhoto(null);
-    setLocateName("");
 
     navigation.navigate("DefaultScreen", {
       photo,
@@ -92,6 +92,11 @@ export const CreatePostsScreen = ({ navigation }) => {
       locateName,
       location,
     });
+  };
+
+  const resetInputs = () => {
+    setName("");
+    setLocateName("");
   };
 
   return (
@@ -167,6 +172,17 @@ export const CreatePostsScreen = ({ navigation }) => {
               </TouchableOpacity>
             </View>
           </View>
+
+          {isKeyboardStatus === "Keyboard Hidden" && (
+            <View style={styles.deletePostBtnContainer}>
+              <TouchableOpacity
+                style={styles.deletePostBtn}
+                onPress={resetInputs}
+              >
+                <EvilIcons name="trash" size={24} color="black" />
+              </TouchableOpacity>
+            </View>
+          )}
         </>
       ) : (
         <>{isFocused && <CustomCamera setPhoto={setPhoto} />}</>
@@ -177,6 +193,8 @@ export const CreatePostsScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
+    hight: "100%",
+    position: "relative",
     flex: 1,
     backgroundColor: "#fff",
   },
@@ -203,20 +221,6 @@ const styles = StyleSheet.create({
     left: 19,
     top: 56,
   },
-  // camera: {
-  //   flex: 1,
-  //   alignItems: "flex-end",
-  //   justifyContent: "flex-end",
-  //   flexDirection: "row",
-  // },
-  // cameraBtn: {
-  //   marginLeft: "auto",
-  //   marginRight: "auto",
-  //   marginBottom: 30,
-  //   borderRadius: 50,
-  //   padding: 20,
-  //   backgroundColor: "#fff",
-  // },
   cameraBtnImage: {
     position: "absolute",
     borderRadius: 50,
@@ -289,5 +293,22 @@ const styles = StyleSheet.create({
     padding: 16,
     fontSize: 16,
     color: "#ffffff",
+  },
+  deletePostBtn: {
+    width: 70,
+    height: 40,
+    paddingTop: 8,
+    paddingRight: 23,
+    paddingBottom: 8,
+    paddingLeft: 23,
+    borderRadius: 20,
+    backgroundColor: "#F6F6F6",
+  },
+  deletePostBtnContainer: {
+    position: "absolute",
+    bottom: 32,
+    left: "50%",
+    transform: [{ translateX: -70 / 2 }],
+    alignItems: "center",
   },
 });

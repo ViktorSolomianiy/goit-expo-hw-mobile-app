@@ -2,10 +2,16 @@ import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 
 import { SvgArrowLeft } from "../SvgIcons";
+import { useButtomBarShown } from "../../hooks/useButtomBarShown";
 
 export const MapScreen = ({ navigation, route }) => {
+  console.log("route", route);
+  const _ = useButtomBarShown();
+
   const latitude = route.params.location.latitude;
   const longitude = route.params.location.longitude;
+  console.log("latitude", latitude);
+  console.log("longitude", longitude);
 
   return (
     <View style={styles.container}>

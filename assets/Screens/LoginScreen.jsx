@@ -14,13 +14,12 @@ import {
 } from "react-native";
 import { useDispatch } from "react-redux";
 
-import { auth, storage } from "../firebase/config";
+import { auth } from "../firebase/config";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { authSlice } from "../redux/auth/authReducer";
 
 import { useTogglePasswordVisibility } from "../hooks/useTogglePasswordVisibility";
 import { useKeyboardStatus } from "../hooks/useKeyboardStatus";
-import { getDownloadURL, ref } from "firebase/storage";
 
 const screenHeight = Dimensions.get("window").height;
 const bgImg = require("../images/bg.jpg");
